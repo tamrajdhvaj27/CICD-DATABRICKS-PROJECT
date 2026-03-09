@@ -34,6 +34,4 @@ jobs:
 
       - name: Upate Databricks Repo (Dev)
         run: databricks repos update "${{env.REPO_PATH}}"\
-            --branch "${{ steps.extract_branch.outputs.branch}}"
-        run: databricks repos update "${{env.REPO_PATH}}"\
-            --branch "${{ steps.extract_branch.outputs.branch}}"
+             --branch "${{ steps.extract_branch.outputs.branch}}"
