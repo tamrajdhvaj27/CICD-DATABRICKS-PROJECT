@@ -1,64 +1,48 @@
 name: main
 
 on:
-    push:
-      paths-ignore:
-       - .github/**
-      branches:
-        - main
+  push:
+    paths-ignore:
+      - .github/**
+    branches:
+      - main
 
 jobs:
-  deploy-dev:
+  deploy:
     runs-on: ubuntu-latest
-    environment: development
+    environment: ${{ matrix.environment }}
+    strategy:
+      matrix:
+        include:
+          - environment: development
+            host_secret: DEV_DEVELOPMENT_TARGET_URL
+            token_secret: DEV_DEVELOPMENT_TARGET_TOKEN
+            repo_path: /Workspace/Users/tamraj.dhvaj@zohomail.in/DEV-CICD-DATABRICKS-PROJECT
+          - environment: production
+            host_secret: PROD_DEVELOPMENT_TARGET_URL
+            token_secret: PROD_DEVELOPMENT_TARGET_TOKEN
+            repo_path: /Workspace/Users/tamraj.dhvaj@zohomail.in/PROD-CICD-DATABRICKS-PROJECT
+
     env:
-      DATABRICKS_HOST: ${{ secrets.DEV_DEVELOPMENT_TARGET_URL }}
-      DATABRICKS_TOKEN: ${{ secrets.DEV_DEVELOPMENT_TARGET_TOKEN }}
-      REPO_PATH: /Workspace/Users/tamraj.dhvaj@zohomail.in/DEV-CICD-DATABRICKS-PROJECT
+      DATABRICKS_HOST: ${{ secrets[matrix.host_secret] }}
+      DATABRICKS_TOKEN: ${{ secrets[matrix.token_secret] }}
+      REPO_PATH: ${{ matrix.repo_path }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.8
-          
-      - name: set up Databrick CLI
-        uses: databricks/setup-cli@main
+          python-version: "3.10"
+
+      - name: Set up Databricks CLI
+        uses: databricks/setup-cli@v0.212.2
 
       - name: Extract branch name
-        id: extract_branch_dev
-        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
+        id: extract_branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
 
-      - name: Upate Databricks Repo (Dev)
-        run: databricks repos update "${{env.REPO_PATH}}"\
-            --branch "${{ steps.extract_branch.outputs.branch}}"
-   deploy-prod:
-        runs-on: ubuntu-latest
-        environment: development
-        env:
-          DATABRICKS_HOST: ${{ secrets.PROD_DEVELOPMENT_TARGET_URL }}
-          DATABRICKS_TOKEN: ${{ secrets.PROD_DEVELOPMENT_TARGET_TOKEN }}
-          REPO_PATH: /Workspace/Users/tamraj.dhvaj@zohomail.in/PROD-CICD-DATABRICKS-PROJECT
-    
-        steps:
-          - name: Checkout repository
-            uses: actions/checkout@v4
-    
-          - name: Set up Python
-            uses: actions/setup-python@v3
-            with:
-              python-version: 3.8
-              
-          - name: set up Databrick CLI
-            uses: databricks/setup-cli@main
-    
-          - name: Extract branch name
-            id: extract_branch_prod
-            run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
-    
-          - name: Upate Databricks Repo (Prod)
-            run: databricks repos update "${{env.REPO_PATH}}"\
-                --branch "${{ steps.extract_branch.outputs.branch}}"
+      - name: Update Databricks Repo
+        run: databricks repos update "${{ env.REPO_PATH }}" --branch "${{ steps.extract_branch.outputs.branch }}"
