@@ -35,10 +35,10 @@ jobs:
       - name: Upate Databricks Repo (Dev)
         run: databricks repos update "${{env.REPO_PATH}}"\
             --branch "${{ steps.extract_branch.outputs.branch}}"
- deploy-prod:
-        runs-on: ubuntu-latest
-        environment: development
-        env:
+  deploy-prod:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
           DATABRICKS_HOST: ${{ secrets.PROD_DEVELOPMENT_TARGET_URL }}
           DATABRICKS_TOKEN: ${{ secrets.PROD_DEVELOPMENT_TARGET_TOKEN }}
           REPO_PATH: /Workspace/Users/tamraj.dhvaj@zohomail.in/PROD-CICD-DATABRICKS-PROJECT
