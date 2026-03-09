@@ -3,7 +3,7 @@ name: main
 on:
     push:
       paths-ignore:
-       - .github/**
+      - .github/**
       branches:
         - main
 
@@ -43,22 +43,22 @@ jobs:
           DATABRICKS_TOKEN: ${{ secrets.PROD_DEVELOPMENT_TARGET_TOKEN }}
           REPO_PATH: /Workspace/Users/tamraj.dhvaj@zohomail.in/PROD-CICD-DATABRICKS-PROJECT
     
-        steps:
-          - name: Checkout repository
-            uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
     
-          - name: Set up Python
-            uses: actions/setup-python@v3
-            with:
-              python-version: 3.8
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+            python-version: 3.8
               
-          - name: set up Databrick CLI
-            uses: databricks/setup-cli@main
+      - name: set up Databrick CLI
+        uses: databricks/setup-cli@main
     
-          - name: Extract branch name
-            id: extract_branch_prod
-            run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
+      - name: Extract branch name
+        id: extract_branch_prod
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
     
-          - name: Upate Databricks Repo (Prod)
-            run: databricks repos update "${{env.REPO_PATH}}"\
-                --branch "${{ steps.extract_branch.outputs.branch}}"
+      - name: Upate Databricks Repo (Prod)
+        run: databricks repos update "${{env.REPO_PATH}}"\
+            --branch "${{ steps.extract_branch.outputs.branch}}"
