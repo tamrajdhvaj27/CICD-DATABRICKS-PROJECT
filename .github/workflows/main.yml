@@ -27,8 +27,8 @@ jobs:
       - name: Configure Databrick Dev
         run: |
           databricks configure --token <<EOF
-          ${{ secrets.DEV_HOST }}
-          ${{ secrets.DEV_TOKEN }}
+          ${{ secrets.DEV_DEPLOYMENT_TARGET_URL }}
+          ${{ secrets.DEV_DEPLOYMENT_TARGET_TOKEN }}
           EOF
 
       - name: Extract branch name
