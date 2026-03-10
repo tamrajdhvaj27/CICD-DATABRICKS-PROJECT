@@ -1,56 +1,63 @@
-name: Deploy Databricks Notebooks
+name: Databricks sales project deployment
 
 on:
-  push:
-    branches:
-      - main
-      - main
+    push:
+      paths-ignore:
+       - .github/**
+      branches:
+        - main
 
 jobs:
-
   deploy-dev:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: development
+    env:
+      DATABRICKS_HOST: ${{ secrets.DEV_DEVELOPMENT_TARGET_URL }}
+      DATABRICKS_TOKEN: ${{ secrets.DEV_DEVELOPMENT_TARGET_TOKEN }}
+      REPO_PATH: /Workspace/Users/tamraj.dhvaj@zohomail.in/DEV-CICD-DATABRICKS-PROJECT
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install Databricks CLI
-        run: |
-          pip install databricks-cli
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+          
+      - name: set up Databrick CLI
+        uses: databricks/setup-cli@main
 
-      - name: Configure Databricks CLI (DEV)
-        run: |
-          databricks configure --token <<EOF
-          ${{ secrets.DEV_DEVELOPMENT_TARGET_URL }}
-          ${{ secrets.DEV_DEVELOPMENT_TARGET_TOKEN }}
-          EOF
+      - name: Extract branch name
+        id: extract_branch_dev
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
 
-      - name: Deploy Notebooks to DEV
-        run: |
-          databricks workspace import_dir ./notebooks /Shared/dev_notebooks --overwrite
-
-
-  deploy-prod:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    needs: deploy-dev
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install Databricks CLI
-        run: |
-          pip install databricks-cli
-
-      - name: Configure Databricks CLI (PROD)
-        run: |
-          databricks configure --token <<EOF
-          ${{ secrets.PROD_DEVELOPMENT_TARGET_URL }}
-          ${{ secrets.PROD_DEVELOPMENT_TARGET_TOKEN }}
-          EOF
-
-      - name: Deploy Notebooks to PROD
-        run: |
-          databricks workspace import_dir ./notebooks /Shared/prod_notebooks --overwrite
+      - name: Upate Databricks Repo (Dev)
+        run: databricks repos update "${{env.REPO_PATH}}"\
+            --branch "${{ steps.extract_branch.outputs.branch}}"
+ deploy-prod:
+        runs-on: ubuntu-latest
+        environment: development
+        env:
+          DATABRICKS_HOST: ${{ secrets.PROD_DEVELOPMENT_TARGET_URL }}
+          DATABRICKS_TOKEN: ${{ secrets.PROD_DEVELOPMENT_TARGET_TOKEN }}
+          REPO_PATH: /Workspace/Users/tamraj.dhvaj@zohomail.in/PROD-CICD-DATABRICKS-PROJECT
+    
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v4
+    
+          - name: Set up Python
+            uses: actions/setup-python@v3
+            with:
+              python-version: 3.8
+              
+          - name: set up Databrick CLI
+            uses: databricks/setup-cli@main
+    
+          - name: Extract branch name
+            id: extract_branch_prod
+            run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
+    
+          - name: Upate Databricks Repo (Prod)
+            run: databricks repos update "${{env.REPO_PATH}}" --branch "${{ steps.extract_branch.outputs.branch}}"
