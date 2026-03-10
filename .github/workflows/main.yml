@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     env:
-      REPO_PATH: /Workspace/Repos/tamraj.dhvaj@zohomail.in/DEV-CICD-DATABRICKS-PROJECT
+      REPO_PATH: ${{vars.DEV_REPOS_PATH}}
 
     steps:
       - name: Checkout repository
