@@ -32,4 +32,4 @@ jobs:
         run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
 
       - name: Upate Databricks Repo (Dev)
-        run: databricks repos update "${{vars.DEV_REPOS_PATH}}" --branch "${{ steps.extract_branch_dev.outputs.branch}}"
+        run: databricks repos update "${{vars.DEV_REPOS_PATH}}" --branch "${{ github.ref_name}}"
